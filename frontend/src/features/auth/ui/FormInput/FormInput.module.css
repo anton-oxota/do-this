@@ -21,3 +21,12 @@
 .input:focus {
     border: 2px solid #000;
 }
+
+.inputWrapper.error input {
+    border: 1px solid #f00;
+    background-color: #ff000021;
+}
+
+.inputWrapper.error input:focus {
+    border: 2px solid #f00;
+}
