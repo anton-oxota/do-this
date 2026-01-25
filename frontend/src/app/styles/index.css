@@ -5,3 +5,12 @@
 
     font-family: "Red Hat Text", sans-serif;
 }
+
+.container {
+    width: 1240px;
+    margin: 0 auto;
+}
+
+button {
+    cursor: pointer;
+}
