@@ -1,29 +1,21 @@
 import css from "./FormInput.module.css";
+import type { FieldError } from "react-hook-form";
 
-type FormInputType = {
+type FormInputType = React.ComponentProps<"input"> & {
     labelText: string;
-    isTouched: boolean;
-    errorMessage: string | null;
-} & React.ComponentProps<"input">;
+    inputError?: FieldError;
+};
 
-function FormInput({
-    labelText,
-    id,
-    isTouched,
-    errorMessage,
-    ...inputProps
-}: FormInputType) {
-    const isErrorVisible = isTouched && errorMessage;
+function FormInput({ labelText, inputError, ...inputProps }: FormInputType) {
     let inputWrapperClasses = css.inputWrapper;
-    if (isErrorVisible) inputWrapperClasses += ` ${css.error}`;
+
+    if (inputError) inputWrapperClasses += ` ${css.error}`;
 
     return (
         <div className={inputWrapperClasses}>
-            <label htmlFor={id}>{labelText}</label>
-            <input className={css.input} {...inputProps} />
-            {isTouched && errorMessage && (
-                <span style={{ color: "red" }}>{errorMessage}</span>
-            )}
+            <label htmlFor={inputProps.name}>{labelText}</label>
+            <input id={inputProps.name} {...inputProps} />
+            {inputError && <p>{inputError.message}</p>}
         </div>
     );
 }

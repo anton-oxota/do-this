@@ -2,8 +2,9 @@ import css from "./AuthPage.module.css";
 
 import { Navigate, useParams } from "react-router";
 
-import AuthForm from "../../components/AuthForm/AuthForm";
 import type { AuthModes } from "../../types/auth";
+import RegisterForm from "../../components/RegisterForm/RegisterForm";
+import LoginForm from "../../components/LoginForm/LoginForm";
 
 function AuthPage() {
     const { mode } = useParams<{ mode: AuthModes }>();
@@ -15,7 +16,10 @@ function AuthPage() {
     return (
         <section className={css.section}>
             <div className="container">
-                <AuthForm mode={mode} />
+                <div className={css.formWrapper}>
+                    {mode === "register" && <RegisterForm />}
+                    {mode === "login" && <LoginForm />}
+                </div>
             </div>
         </section>
     );
