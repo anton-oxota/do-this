@@ -1,14 +1,14 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { useForm, type RegisterOptions } from "react-hook-form";
 import Form from "../../ui/Form/Form";
 
-type UserRegisterData = {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-};
+import type { UserRegisterData } from "../../types/auth";
+import { useMutation } from "@tanstack/react-query";
+import ClientApi, {
+    type RegisterUserErrorResponse,
+    type RegisterUserResponse,
+} from "../../../../api/clientApi";
 
 const inputNameOptions: RegisterOptions<UserRegisterData> = {
     required: "Name is required",
@@ -56,13 +56,31 @@ function RegisterForm() {
         register,
         handleSubmit,
         getValues,
+        setError,
         formState: { errors },
     } = useForm<UserRegisterData>({ mode: "onTouched" });
 
-    console.log(getValues("password"));
+    const { mutate, isPending } = useMutation({
+        mutationFn: (data: UserRegisterData) => ClientApi.registerUser(data),
+        onSuccess: (value: RegisterUserResponse) => {
+            navigate("/auth/registration-success", {
+                state: {
+                    emailVerificationUrl: value.emailVerificationUrl,
+                    email: getValues("email"),
+                },
+            });
+        },
+        onError: (error: RegisterUserErrorResponse) => {
+            error.error.forEach(({ path, msg }) =>
+                setError(path, { message: msg }),
+            );
+        },
+    });
+
+    const navigate = useNavigate();
 
     function handleRegister(data: UserRegisterData) {
-        console.log(data);
+        mutate(data);
     }
 
     return (
@@ -72,12 +90,14 @@ function RegisterForm() {
                 <Form.Input
                     labelText="Name"
                     placeholder="John Doe"
+                    defaultValue={"John Doe"}
                     {...register("name", inputNameOptions)}
                     inputError={errors["name"]}
                 />
                 <Form.Input
                     labelText="Email"
                     placeholder="example@mail.com"
+                    defaultValue={"example@mail.com"}
                     {...register("email", inputEmailOptions)}
                     inputError={errors["email"]}
                 />
@@ -86,6 +106,7 @@ function RegisterForm() {
                     labelText="Password"
                     type="password"
                     placeholder="••••••••••••"
+                    defaultValue={"123456"}
                     {...register("password", inputPasswordOptions)}
                     inputError={errors["password"]}
                 />
@@ -94,6 +115,7 @@ function RegisterForm() {
                     labelText="Confirm password"
                     type="password"
                     placeholder="••••••••••••"
+                    defaultValue={"123456"}
                     {...register(
                         "confirmPassword",
                         inputConfirmPasswordOptions(getValues("password")),
@@ -101,7 +123,10 @@ function RegisterForm() {
                     inputError={errors["confirmPassword"]}
                 />
                 <Link to="/auth/login">I already have account</Link>
-                <button type="submit">Sing Up</button>
+
+                <button type="submit" disabled={isPending}>
+                    {isPending ? "Loading..." : "Sing Up"}
+                </button>
             </Form>
         </div>
     );

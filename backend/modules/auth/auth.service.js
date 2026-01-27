@@ -19,6 +19,10 @@ function generateRefreshToken(userId) {
     });
 }
 
+function createVerificationEmailUrl(token) {
+    return `http://localhost:5173/auth/verify-email?token=${token}`;
+}
+
 async function sendVerificationEmail(verificationUrl, userEmail) {
     await transporter.sendMail({
         from: `DoThis <${process.env.GOOGLE_EMAIL}>`,
@@ -33,3 +37,4 @@ exports.generateEmailVerificationToken = generateEmailVerificationToken;
 exports.generateAccessToken = generateAccessToken;
 exports.generateRefreshToken = generateRefreshToken;
 exports.sendVerificationEmail = sendVerificationEmail;
+exports.createVerificationEmailUrl = createVerificationEmailUrl;

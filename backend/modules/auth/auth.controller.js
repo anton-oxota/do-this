@@ -6,6 +6,7 @@ const {
     generateAccessToken,
     generateRefreshToken,
     sendVerificationEmail,
+    createVerificationEmailUrl,
 } = require("./auth.service");
 
 async function register(req, res) {
@@ -23,7 +24,9 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, 12);
     const emailVerificationToken = generateEmailVerificationToken();
     const emailVerificationExpires = Date.now() + 1000 * 60 * 60 * 24; // 1 day
-    const emailVerificationUrl = `http://localhost:3000/auth/verify-email?token=${emailVerificationToken}`;
+    const emailVerificationUrl = createVerificationEmailUrl(
+        emailVerificationToken,
+    );
 
     const existedUser = await User.findOne({ email });
 
@@ -35,7 +38,7 @@ async function register(req, res) {
         await existedUser.save();
 
         // SEND VERIFICATION MAIL
-        sendVerificationEmail(emailVerificationUrl, email);
+        await sendVerificationEmail(emailVerificationUrl, email);
 
         return res.status(201).json({
             emailVerificationUrl,
@@ -54,7 +57,7 @@ async function register(req, res) {
     const createdUser = await user.save();
 
     // SEND VERIFICATION MAIL
-    sendVerificationEmail(emailVerificationUrl, email);
+    await sendVerificationEmail(emailVerificationUrl, email);
 
     res.status(201).json({
         message: "User created",
@@ -107,11 +110,15 @@ async function resendVerificationEmail(req, res) {
 
     const emailVerificationToken = generateEmailVerificationToken();
     const emailVerificationExpires = Date.now() + 1000 * 60 * 10; // 10 min
-    const emailVerificationUrl = `http://localhost:3000/auth/verify-email?token=${emailVerificationToken}`;
+    const emailVerificationUrl = createVerificationEmailUrl(
+        emailVerificationToken,
+    );
 
     user.emailVerificationToken = emailVerificationToken;
     user.emailVerificationExpires = emailVerificationExpires;
     user.save();
+
+    await sendVerificationEmail(emailVerificationUrl, email);
 
     res.status(200).json({
         emailVerificationUrl,
